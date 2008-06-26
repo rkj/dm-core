@@ -339,10 +339,10 @@ module DataMapper
     def create_property_setter(property)
       unless instance_methods.include?(property.name.to_s + '=')
         class_eval <<-EOS, __FILE__, __LINE__
-          #{property.writer_visibility}
           def #{property.name}=(value)
             attribute_set(#{property.name.inspect}, value)
           end
+          #{property.writer_visibility} :#{property.name}
         EOS
       end
     end

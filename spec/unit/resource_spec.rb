@@ -8,7 +8,8 @@ class Planet
   property :id, Integer, :key => true
   property :name, String
   property :age, Integer
-  property :core, String, :private => true
+  property :core, String, :accessor => :private
+  # property :core, String, :private => true
   property :type, Discriminator
   property :data, Object
 
@@ -299,21 +300,25 @@ describe "DataMapper::Resource" do
   end
 
   it "should have attributes" do
-    attributes = { :name => 'Jupiter', :age => 1_000_000, :core => nil, :id => 42, :type => Planet, :data => nil }
+    attributes = { :name => 'Jupiter', :age => 1_000_000, :id => 42, :type => Planet, :data => nil }
     jupiter = Planet.new(attributes)
     jupiter.attributes.should == attributes
   end
 
   it "should be able to set attributes" do
-    attributes = { :name => 'Jupiter', :age => 1_000_000, :core => nil, :id => 42, :type => Planet, :data => nil }
+    attributes = { :name => 'Jupiter', :age => 1_000_000, :id => 42, :type => Planet, :data => nil }
     jupiter = Planet.new(attributes)
     jupiter.attributes.should == attributes
     jupiter.attributes = attributes.merge(:core => 'Magma')
     jupiter.attributes.should == attributes
 
-    jupiter.update_attributes({ :core => "Toast", :type => "Bob" }, :core).should be_true
-    jupiter.core.should == "Toast"
+    jupiter.update_attributes({ :type => "Bob" }, :core).should be_true
     jupiter.type.should_not == "Bob"
+  end
+  
+  it "should not be able to set private attributes" do
+    pending
+    jupiter = Planet.new({ :core => "Molten Metal" })
   end
 
   it "should not mark attributes dirty if they are similar after update" do

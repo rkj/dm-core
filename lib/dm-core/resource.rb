@@ -486,10 +486,12 @@ module DataMapper
     def attributes=(values_hash)
       values_hash.each_pair do |k,v|
         setter = "#{k.to_s.sub(/\?\z/, '')}="
-
-        # use the attribute mutator if it is public to set the value
-        next unless respond_to?(setter, false)
-        send(setter, v)
+        
+        if respond_to?(setter)
+          send(setter, v)
+        else
+          raise NameError, "#{setter} is not a public property"
+        end
       end
     end
 

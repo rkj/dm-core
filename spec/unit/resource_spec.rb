@@ -9,7 +9,6 @@ class Planet
   property :name, String
   property :age, Integer
   property :core, String, :accessor => :private
-  # property :core, String, :private => true
   property :type, Discriminator
   property :data, Object
 
@@ -328,20 +327,19 @@ describe "DataMapper::Resource" do
   
   # :core is a private accessor so Ruby should raise NameError
   it "should not be able to set private attributes" do
-    # pending
     lambda {
       jupiter = Planet.new({ :core => "Molten Metal" })
     }.should raise_error(NameError)
   end
 
   it "should not mark attributes dirty if they are similar after update" do
-    jupiter = Planet.new(:name => 'Jupiter', :age => 1_000_000, :core => nil, :id => 42, :data => { :a => "Yeah!" })
+    jupiter = Planet.new(:name => 'Jupiter', :age => 1_000_000, :id => 42, :data => { :a => "Yeah!" })
     jupiter.save.should be_true
 
     # discriminator will be set automatically
     jupiter.type.should == Planet
 
-    jupiter.attributes = { :name => 'Jupiter', :age => 1_000_000, :core => nil, :data => { :a => "Yeah!" } }
+    jupiter.attributes = { :name => 'Jupiter', :age => 1_000_000, :data => { :a => "Yeah!" } }
 
     jupiter.attribute_dirty?(:name).should be_false
     jupiter.attribute_dirty?(:age).should be_false
@@ -352,7 +350,7 @@ describe "DataMapper::Resource" do
   end
 
   it "should not mark attributes dirty if they are similar after typecasting" do
-    jupiter = Planet.new(:name => 'Jupiter', :age => 1_000_000, :core => nil, :id => 42, :type => nil)
+    jupiter = Planet.new(:name => 'Jupiter', :age => 1_000_000, :id => 42, :type => nil)
     jupiter.save.should be_true
     jupiter.dirty?.should be_false
 

@@ -289,9 +289,7 @@ describe "DataMapper::Resource" do
   end
 
   it "should return an instance of the created object" do
-    pending
-    # This should raise an exception because :core is private
-    Planet.create!(:name => 'Venus', :age => 1_000_000, :core => nil, :id => 42).should be_a_kind_of(Planet)
+    Planet.create!(:name => 'Venus', :age => 1_000_000, :id => 42).should be_a_kind_of(Planet)
   end
 
   it 'should provide persistance methods' do
@@ -328,9 +326,12 @@ describe "DataMapper::Resource" do
     jupiter.attributes.should == attributes.merge(new_age)
   end
   
+  # :core is a private accessor so Ruby should raise NameError
   it "should not be able to set private attributes" do
-    pending
-    jupiter = Planet.new({ :core => "Molten Metal" })
+    # pending
+    lambda {
+      jupiter = Planet.new({ :core => "Molten Metal" })
+    }.should raise_error(NameError)
   end
 
   it "should not mark attributes dirty if they are similar after update" do

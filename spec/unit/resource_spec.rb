@@ -289,6 +289,8 @@ describe "DataMapper::Resource" do
   end
 
   it "should return an instance of the created object" do
+    pending
+    # This should raise an exception because :core is private
     Planet.create!(:name => 'Venus', :age => 1_000_000, :core => nil, :id => 42).should be_a_kind_of(Planet)
   end
 
@@ -309,11 +311,21 @@ describe "DataMapper::Resource" do
     attributes = { :name => 'Jupiter', :age => 1_000_000, :id => 42, :type => Planet, :data => nil }
     jupiter = Planet.new(attributes)
     jupiter.attributes.should == attributes
-    jupiter.attributes = attributes.merge(:core => 'Magma')
+    
+    new_attributes = attributes.merge( :age => 2_500_000 )
+    jupiter.attributes = new_attributes
+    jupiter.attributes.should == new_attributes
+  end
+  
+  it "should be able to set attributes using update_attributes" do
+    attributes = { :name => 'Jupiter', :age => 1_000_000, :id => 42, :type => Planet, :data => nil }
+    jupiter = Planet.new(attributes)
     jupiter.attributes.should == attributes
 
-    jupiter.update_attributes({ :type => "Bob" }, :core).should be_true
-    jupiter.type.should_not == "Bob"
+    new_age = { :age => 3_700_000 }
+    jupiter.update_attributes(new_age).should be_true
+    jupiter.age.should == 3_700_000
+    jupiter.attributes.should == attributes.merge(new_age)
   end
   
   it "should not be able to set private attributes" do

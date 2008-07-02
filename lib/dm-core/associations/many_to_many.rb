@@ -12,8 +12,6 @@ module DataMapper
         assert_kind_of 'model',   model,   Model
         assert_kind_of 'options', options, Hash
 
-        repository_name = model.repository.name
-
         model.class_eval <<-EOS, __FILE__, __LINE__
           def #{name}(query = {})
             #{name}_association.all(query)
@@ -27,7 +25,7 @@ module DataMapper
 
           def #{name}_association
             @#{name}_association ||= begin
-              unless relationship = model.relationships(#{repository_name.inspect})[#{name.inspect}]
+              unless relationship = model.relationships(#{model.repository.name.inspect})[#{name.inspect}]
                 raise ArgumentError, 'Relationship #{name.inspect} does not exist'
               end
               association = Proxy.new(relationship, self)
@@ -41,7 +39,7 @@ module DataMapper
         opts.delete(:through)
         opts[:child_model]              ||= opts.delete(:class_name)  || Extlib::Inflection.classify(name)
         opts[:parent_model]             =   model
-        opts[:repository_name]          =   repository_name
+        opts[:repository]               =   model.repository
         opts[:remote_relationship_name] ||= opts.delete(:remote_name) || name
         opts[:parent_key]               =   opts[:parent_key]
         opts[:child_key]                =   opts[:child_key]
@@ -55,7 +53,7 @@ module DataMapper
 
         model.has(model.n, opts[:near_relationship_name])
 
-        relationship = model.relationships(repository_name)[name] = RelationshipChain.new(opts)
+        relationship = model.relationships(model.repository.name)[name] = RelationshipChain.new(opts)
 
         unless Object.const_defined?(model_name)
           model = DataMapper::Model.new(storage_name)

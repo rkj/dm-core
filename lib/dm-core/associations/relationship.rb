@@ -5,18 +5,18 @@ module DataMapper
 
       OPTIONS = [ :class_name, :child_key, :parent_key, :min, :max, :through ]
 
-      attr_reader :name, :repository_name, :options, :query
+      attr_reader :name, :options, :query
 
       def child_key
         @child_key ||= begin
-          model_properties = child_model.properties(repository_name)
+          model_properties = child_model.properties(self.repository.name)
 
           child_key = parent_key.zip(@child_properties || []).map do |parent_property,property_name|
             # TODO: use something similar to DM::NamingConventions to determine the property name
             parent_name = Extlib::Inflection.underscore(Extlib::Inflection.demodulize(parent_model))
             property_name ||= "#{parent_name}_#{parent_property.name}".to_sym
 
-            model_properties[property_name] || DataMapper.repository(repository_name) do
+            model_properties[property_name] || self.repository do
               attributes = {}
 
               [ :length, :precision, :scale ].each do |attribute|
@@ -39,9 +39,9 @@ module DataMapper
       def parent_key
         @parent_key ||= begin
           parent_key = if @parent_properties
-            parent_model.properties(repository_name).slice(*@parent_properties)
+            parent_model.properties(self.repository.name).slice(*@parent_properties)
           else
-            parent_model.key(repository_name)
+            parent_model.key(self.repository.name)
           end
 
           PropertySet.new(parent_key)
@@ -59,8 +59,8 @@ module DataMapper
       # @api private
       def get_children(parent, options = {}, finder = :all, *args)
         bind_values = parent_values = parent_key.get(parent)
-        bind_values |= DataMapper.repository(repository_name).identity_map(parent_model).keys.flatten
-        query_values = bind_values.reject { |k| DataMapper.repository(repository_name).identity_map(child_model)[[k]] }
+        bind_values |= self.repository.identity_map(parent_model).keys.flatten
+        query_values = bind_values.reject { |k| self.repository.identity_map(child_model)[[k]] }
 
         association_accessor = "#{self.name}_association"
 
@@ -69,7 +69,7 @@ module DataMapper
           query[key] = query_values.empty? ? bind_values : query_values
         end
 
-        DataMapper.repository(repository_name) do
+        self.repository do
           collection = child_model.send(finder, *(args << @query.merge(options).merge(query)))
           return collection unless Collection === collection
           grouped_collection = collection.inject({}) do |grouped, model|
@@ -97,14 +97,14 @@ module DataMapper
 
       # @api private
       def get_parent(child)
-        if parent = DataMapper.repository(repository_name).identity_map(parent_model)[child_key.get(child)]
+        if parent = self.repository.identity_map(parent_model)[child_key.get(child)]
           return parent
         else
           bind_values = child_key.get(child)
           return nil if bind_values.any? { |bind_value| bind_value.nil? }
           query = parent_key.to_query(bind_values)
 
-          DataMapper.repository(repository_name) do
+          self.repository do
             parent_model.first(query)
           end
         end
@@ -115,15 +115,19 @@ module DataMapper
         child_key.set(child, parent && parent_key.get(parent))
       end
 
+      def repository(instance = nil)
+        instance == nil ? @repository : instance.repository
+      end
+
       private
 
       # +child_model_name and child_properties refers to the FK, parent_model_name
       # and parent_properties refer to the PK.  For more information:
       # http://edocs.bea.com/kodo/docs41/full/html/jdo_overview_mapping_join.html
       # I wash my hands of it!
-      def initialize(name, repository_name, child_model, parent_model, options = {})
-        assert_kind_of 'name',              name,              Symbol
-        assert_kind_of 'repository_name',   repository_name,   Symbol
+      def initialize(name, repository, child_model, parent_model, options = {})
+        assert_kind_of 'name',              name,       Symbol
+        # assert_kind_of 'repository',   repository, Symbol
         assert_kind_of 'child_model',  child_model,  String, Class
         assert_kind_of 'parent_model', parent_model, String, Class
 
@@ -136,7 +140,7 @@ module DataMapper
         end
 
         @name              = name
-        @repository_name   = repository_name
+        @repository        = repository
         @child_model       = child_model
         @child_properties  = child_properties   # may be nil
         @query             = options.reject { |k,v| OPTIONS.include?(k) }

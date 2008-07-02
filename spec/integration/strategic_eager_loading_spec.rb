@@ -21,6 +21,7 @@ describe "Strategic Eager Loading" do
 
       property :id, Serial
       property :name, String
+      property :zoo_id, Integer
 
       belongs_to :zoo
       has n, :animals
@@ -32,6 +33,7 @@ describe "Strategic Eager Loading" do
 
       property :id, Serial
       property :name, String
+      property :exhibit_id, Integer
 
       belongs_to :exhibit
     end

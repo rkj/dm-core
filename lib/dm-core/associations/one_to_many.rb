@@ -13,8 +13,6 @@ module DataMapper
         assert_kind_of 'model',   model,   Model
         assert_kind_of 'options', options, Hash
 
-        repository_name = model.repository.name
-
         model.class_eval <<-EOS, __FILE__, __LINE__
           def #{name}(query = {})
             #{name}_association.all(query)
@@ -28,7 +26,7 @@ module DataMapper
 
           def #{name}_association
             @#{name}_association ||= begin
-              unless relationship = model.relationships(#{repository_name.inspect})[#{name.inspect}]
+              unless relationship = model.relationships(#{model.repository.name.inspect})[#{name.inspect}]
                 raise ArgumentError, 'Relationship #{name.inspect} does not exist'
               end
               association = Proxy.new(relationship, self)
@@ -38,7 +36,7 @@ module DataMapper
           end
         EOS
 
-        model.relationships(repository_name)[name] = if options.has_key?(:through)
+        model.relationships(model.repository.name)[name] = if options.has_key?(:through)
           opts = options.dup
           warn(<<-EOS.margin) if opts.key?(:class_name) && !opts.key?(:child_key)
           You have speficied #{model.name}.has(#{opts[:class_name]}) with the :class_name option. You probably also want to specify the :child_key option.
@@ -46,7 +44,7 @@ module DataMapper
 
           opts[:child_model]            ||= opts.delete(:class_name)  || Extlib::Inflection.classify(name)
           opts[:parent_model]             =   model
-          opts[:repository_name]          =   repository_name
+          opts[:repository]               =   model.repository
           opts[:near_relationship_name]   =   opts.delete(:through)
           opts[:remote_relationship_name] ||= opts.delete(:remote_name) || name
           opts[:parent_key]               =   opts[:parent_key]
@@ -56,7 +54,7 @@ module DataMapper
         else
           Relationship.new(
             name,
-            repository_name,
+            model.repository,
             options.fetch(:class_name, Extlib::Inflection.classify(name)),
             model,
             options

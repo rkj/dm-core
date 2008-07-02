@@ -11,8 +11,6 @@ module DataMapper
         assert_kind_of 'model',   model,   Model
         assert_kind_of 'options', options, Hash
 
-        repository_name = model.repository.name
-
         model.class_eval <<-EOS, __FILE__, __LINE__
           def #{name}
             #{name}_association.nil? ? nil : #{name}_association
@@ -26,7 +24,7 @@ module DataMapper
 
           def #{name}_association
             @#{name}_association ||= begin
-              unless relationship = model.relationships(#{repository_name.inspect})[:#{name}]
+              unless relationship = model.relationships(#{model.repository.name.inspect})[:#{name}]
                 raise ArgumentError, 'Relationship #{name.inspect} does not exist'
               end
               association = Proxy.new(relationship, self)
@@ -36,9 +34,9 @@ module DataMapper
           end
         EOS
 
-        model.relationships(repository_name)[name] = Relationship.new(
+        model.relationships(model.repository.name)[name] = Relationship.new(
           name,
-          repository_name,
+          model.repository,
           model,
           options.fetch(:class_name, Extlib::Inflection.classify(name)),
           options

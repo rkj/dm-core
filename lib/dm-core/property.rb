@@ -279,6 +279,7 @@ module DataMapper
       Time,
       Object,
       Class,
+      DataMapper::Types::Geometry,
       DataMapper::Types::Discriminator,
       DataMapper::Types::Serial
     ]

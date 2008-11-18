@@ -7,6 +7,7 @@ require dir / 'paranoid_datetime'
 require dir / 'paranoid_boolean'
 require dir / 'object'
 require dir / 'serial'
+require dir / 'geometry'
 
 unless defined?(DM)
   DM = DataMapper::Types

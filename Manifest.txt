@@ -1,5 +1,4 @@
 .autotest
-.gitignore
 CONTRIBUTING
 FAQ
 History.txt
@@ -10,7 +9,6 @@ README.txt
 Rakefile
 SPECS
 TODO
-dm-core.gemspec
 lib/dm-core.rb
 lib/dm-core/adapters.rb
 lib/dm-core/adapters/abstract_adapter.rb
@@ -18,6 +16,7 @@ lib/dm-core/adapters/data_objects_adapter.rb
 lib/dm-core/adapters/in_memory_adapter.rb
 lib/dm-core/adapters/mysql_adapter.rb
 lib/dm-core/adapters/postgres_adapter.rb
+lib/dm-core/adapters/postgis_adapter.rb
 lib/dm-core/adapters/sqlite3_adapter.rb
 lib/dm-core/associations.rb
 lib/dm-core/associations/many_to_many.rb

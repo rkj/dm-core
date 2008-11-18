@@ -20,7 +20,7 @@ require 'rubygems'
 gem 'addressable', '~>2.0'
 require 'addressable/uri'
 
-gem 'extlib', '>=0.9.8'
+gem 'extlib', '>=0.9.5'
 require 'extlib'
 require "extlib/inflection"
 
@@ -138,7 +138,7 @@ module DataMapper
         adapter_name = uri_or_options.scheme
     end
 
-    class_name = Extlib::Inflection.classify(adapter_name) + 'Adapter'
+    class_name = Extlib::Inflection.camelize(adapter_name) + 'Adapter'
 
     unless Adapters::const_defined?(class_name)
       lib_name = "#{Extlib::Inflection.underscore(adapter_name)}_adapter"

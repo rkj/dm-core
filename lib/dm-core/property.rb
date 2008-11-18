@@ -632,6 +632,11 @@ module DataMapper
       end
     end
 
+		def typecast_to_geometry(raw_value)
+			return nil if raw_value.nil? || raw_value.empty?
+			return GeoRuby::SimpleFeatures::Geometry.from_hex_ewkb(raw_value)
+		end
+
     def typecast_hash_to_datetime(hash)
       args = extract_time_args_from_hash(hash, :year, :month, :day, :hour, :min, :sec)
       DateTime.new(*args)
